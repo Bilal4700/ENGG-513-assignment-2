@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Accident Count by Year</title>
+
+		<style>
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+				width: 100%;
+				height: 100%;
+				font-family: Arial, sans-serif;
+				background: #f8f9fa;
+			}
+
+			.wrapper {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 20px;
+			}
+
+			.header {
+				text-align: center;
+				margin-bottom: 10px;
+			}
+
+			.header h1 {
+				margin: 0;
+				font-size: 32px;
+				color: #222;
+			}
+
+			.header p {
+				margin: 8px 0 0;
+				font-size: 16px;
+				color: #666;
+			}
+
+			#chartdiv {
+				width: 100%;
+				height: 600px;
+				background: white;
+				border-radius: 12px;
+				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrapper">
+			<div class="header">
+				<h1>Canadian Car Accidents by Year</h1>
+				<p>
+					Interactive line chart showing total recorded accident counts for each
+					year
+				</p>
+			</div>
+
+			<div id="chartdiv"></div>
+		</div>
+
+		<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+		<script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+		<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+
+		<script>
+			am5.ready(function () {
+				const root = am5.Root.new("chartdiv");
+
+				root.setThemes([am5themes_Animated.new(root)]);
+
+				const chart = root.container.children.push(
+					am5xy.XYChart.new(root, {
+						panX: true,
+						panY: true,
+						wheelX: "panX",
+						wheelY: "zoomX",
+						pinchZoomX: true,
+						layout: root.verticalLayout,
+					}),
+				);
+
+				const legend = chart.children.push(
+					am5.Legend.new(root, {
+						centerX: am5.percent(50),
+						x: am5.percent(50),
+						marginBottom: 10,
+					}),
+				);
+
+				const xRenderer = am5xy.AxisRendererX.new(root, {
+					minGridDistance: 30,
+				});
+
+				xRenderer.labels.template.setAll({
+					rotation: 0,
+					centerY: am5.percent(50),
+					centerX: am5.percent(50),
+					paddingTop: 10,
+				});
+
+				const xAxis = chart.xAxes.push(
+					am5xy.CategoryAxis.new(root, {
+						categoryField: "year",
+						renderer: xRenderer,
+						tooltip: am5.Tooltip.new(root, {}),
+					}),
+				);
+
+				xAxis.children.push(
+					am5.Label.new(root, {
+						text: "Year",
+						x: am5.percent(50),
+						centerX: am5.percent(50),
+						paddingTop: 15,
+						fontSize: 16,
+						fontWeight: "500",
+					}),
+				);
+
+				const yAxis = chart.yAxes.push(
+					am5xy.ValueAxis.new(root, {
+						renderer: am5xy.AxisRendererY.new(root, {}),
+					}),
+				);
+
+				yAxis.children.unshift(
+					am5.Label.new(root, {
+						rotation: -90,
+						text: "Number of Accidents",
+						y: am5.percent(50),
+						centerX: am5.percent(50),
+						fontSize: 16,
+						fontWeight: "500",
+					}),
+				);
+
+				const series = chart.series.push(
+					am5xy.LineSeries.new(root, {
+						name: "Accident Count",
+						xAxis: xAxis,
+						yAxis: yAxis,
+						valueYField: "count",
+						categoryXField: "year",
+						tooltip: am5.Tooltip.new(root, {
+							labelText:
+								"Year: {categoryX}\nAccidents: {valueY.formatNumber('#,###')}",
+						}),
+					}),
+				);
+
+				series.strokes.template.setAll({
+					strokeWidth: 3,
+				});
+
+				series.bullets.push(function () {
+					return am5.Bullet.new(root, {
+						sprite: am5.Circle.new(root, {
+							radius: 4,
+							fill: series.get("fill"),
+						}),
+					});
+				});
+
+				legend.data.setAll([series]);
+
+				am5.net.load("yearly_accident_counts.csv").then(function (result) {
+					const csv = result.response;
+					const lines = csv.trim().split("\n");
+
+					const data = lines.slice(1).map((line) => {
+						const [year, count] = line.split(",");
+						return {
+							year: year.trim(),
+							count: Number(count.trim()),
+						};
+					});
+
+					xAxis.data.setAll(data);
+					series.data.setAll(data);
+				});
+
+				chart.set(
+					"cursor",
+					am5xy.XYCursor.new(root, {
+						xAxis: xAxis,
+					}),
+				);
+
+				series.appear(1000);
+				chart.appear(1000, 100);
+			});
+		</script>
+	</body>
+</html>
