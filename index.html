@@ -166,21 +166,31 @@
 
 				legend.data.setAll([series]);
 
-				am5.net.load("yearly_accident_counts.csv").then(function (result) {
-					const csv = result.response;
-					const lines = csv.trim().split("\n");
+				const data = [
+					{ year: "2004", count: 2735 },
+					{ year: "2005", count: 2898 },
+					{ year: "2006", count: 2871 },
+					{ year: "2007", count: 2753 },
+					{ year: "2008", count: 2431 },
+					{ year: "2009", count: 2216 },
+					{ year: "2010", count: 2238 },
+					{ year: "2011", count: 2023 },
+					{ year: "2012", count: 2075 },
+					{ year: "2013", count: 1951 },
+					{ year: "2014", count: 1841 },
+					{ year: "2015", count: 1887 },
+					{ year: "2016", count: 1900 },
+					{ year: "2017", count: 1861 },
+					{ year: "2018", count: 1939 },
+					{ year: "2019", count: 1756 },
+					{ year: "2020", count: 1746 },
+					{ year: "2021", count: 1768 },
+					{ year: "2022", count: 1931 },
+					{ year: "2023", count: 1964 },
+				];
 
-					const data = lines.slice(1).map((line) => {
-						const [year, count] = line.split(",");
-						return {
-							year: year.trim(),
-							count: Number(count.trim()),
-						};
-					});
-
-					xAxis.data.setAll(data);
-					series.data.setAll(data);
-				});
+				xAxis.data.setAll(data);
+				series.data.setAll(data);
 
 				chart.set(
 					"cursor",
